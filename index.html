@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Control de Asistencia · Actualizada · acceso corregido</title>
 <script>
-const URL='https://oncrgfvygxufzpxlooul.supabase.co',KEY='sb_publishable_v-kJsoyf-CYvKGXEMGK6uA_Pa7XBmsc';
+const URL='https://oncrgfvygxufzpxlooul.supabase.co',KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9uY3JnZnZ5Z3h1ZnpweGxvb3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2MTAxMDksImV4cCI6MjEwNTE4NjEwOX0.Kcam-PyisMDdIDwApT95xw6mBCFkGeAmMvrmfPArgdA';
 let SESSION=null;
 try{SESSION=JSON.parse(localStorage.getItem('ca_session')||'null')}catch(_){SESSION=null}
 async function rest(path,opt={}){
