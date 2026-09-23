@@ -84,8 +84,7 @@ body{margin:0;background:#f4f6fa;color:#1f2937;font-family:system-ui,-apple-syst
 <section id="backup" class="tab hidden"><div class="card"><h2>Copias</h2><p class="muted">Descarga una copia de los datos para guardarla.</p><button class="primary" id="ex">Descargar copia</button><p id="bm" class="muted"></p></div></section>
 </div></div><div id="mo" class="modal"><div id="mb" class="modalbox"></div></div>
 <script>
-// Cliente REST de Supabase creado arriba; no depende de librerías externas.
-const db=db;let D={u:[],a:[],e:[],t:[],c:[]},cal=new Date();
+// Cliente REST de Supabase creado arriba; no depende de librerías externas.let D={u:[],a:[],e:[],t:[],c:[]},cal=new Date();
 const $=x=>document.getElementById(x), money=x=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(x||0)), esc=x=>String(x||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])), fd=x=>x?new Date(x+'T12:00:00').toLocaleDateString('es-ES'):'';
 async function get(t){const r=await db.from(t).select('*');if(r.error)throw r.error;return r.data||[]}async function load(){D.u=await get('app_users');D.a=await get('activities');D.e=await get('enrollments');D.t=await get('attendance');D.c=await get('charges');D.u.sort((x,y)=>x.nombre.localeCompare(y.nombre,'es'));D.a.sort((x,y)=>x.nombre.localeCompare(y.nombre,'es'));render()}
 function modal(h){$('mb').innerHTML=h;$('mo').classList.add('show')}function close(){ $('mo').classList.remove('show') }$('mo').onclick=e=>{if(e.target.id==='mo')close()};
