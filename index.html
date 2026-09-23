@@ -1,6 +1,75 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Control de Asistencia · Actualizada</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.105.0/dist/umd/supabase.js"></script>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Control de Asistencia · Actualizada · acceso corregido</title>
+<script>
+const URL='https://oncrgfvygxufzpxlooul.supabase.co',KEY='sb_publishable_v-kJsoyf-CYvKGXEMGK6uA_Pa7XBmsc';
+let SESSION=null;
+try{SESSION=JSON.parse(localStorage.getItem('ca_session')||'null')}catch(_){SESSION=null}
+async function rest(path,opt={}){
+  const headers=Object.assign({'apikey':KEY,'Accept':'application/json'},opt.headers||{});
+  if(opt.body!==undefined) headers['Content-Type']='application/json';
+  if(SESSION?.access_token) headers['Authorization']='Bearer '+SESSION.access_token;
+  try{
+    const res=await fetch(URL+path,Object.assign({},opt,{headers}));
+    const text=await res.text();
+    let data=null; try{data=text?JSON.parse(text):null}catch(_){data=text}
+    if(!res.ok) return {data:null,error:(data?.message||data?.error_description||data?.error||('HTTP '+res.status))};
+    return {data,error:null};
+  }catch(e){return {data:null,error:e?.message||String(e)}}
+}
+function tableApi(table){
+  const q={method:'GET',select:'*',filters:[],body:null,headers:{}};
+  const api={
+    select(cols='*'){q.select=cols;return api},
+    eq(col,val){q.filters.push(col+'=eq.'+encodeURIComponent(val));return api},
+    insert(row){q.method='POST';q.body=Array.isArray(row)?row:[row];q.headers['Prefer']='return=representation';return api},
+    update(row){q.method='PATCH';q.body=row;q.headers['Prefer']='return=representation';return api},
+    delete(){q.method='DELETE';return api},
+    upsert(row,opts={}){q.method='POST';q.body=Array.isArray(row)?row:[row];q.headers['Prefer']='resolution=merge-duplicates,return=representation';if(opts.onConflict)q.filters.push('on_conflict='+encodeURIComponent(opts.onConflict));return api},
+    async single(){const out=await run();return {data:Array.isArray(out.data)?(out.data[0]||null):out.data,error:out.error}},
+    then(resolve,reject){return run().then(resolve,reject)}
+  };
+  async function run(){
+    let path='/rest/v1/'+encodeURIComponent(table);
+    const params=[];
+    if(q.select)params.push('select='+encodeURIComponent(q.select));
+    for(const f of q.filters)params.push(f);
+    if(params.length)path+='?'+params.join('&');
+    return rest(path,{method:q.method,headers:q.headers,body:q.body===null?undefined:JSON.stringify(q.body)});
+  }
+  return api;
+}
+const db={
+  from:tableApi,
+  auth:{
+    async signInWithPassword({email,password}){
+      const out=await rest('/auth/v1/token?grant_type=password',{method:'POST',body:JSON.stringify({email,password})});
+      if(out.error)return {data:null,error:{message:out.error}};
+      SESSION=out.data;
+      localStorage.setItem('ca_session',JSON.stringify(SESSION));
+      if(window.__caAuth)window.__caAuth('SIGNED_IN',SESSION);
+      return {data:{session:SESSION,user:SESSION.user},error:null};
+    },
+    async signUp({email,password}){
+      const out=await rest('/auth/v1/signup',{method:'POST',body:JSON.stringify({email,password})});
+      return out.error?{data:null,error:{message:out.error}}:{data:out.data,error:null};
+    },
+    async signOut(){
+      if(SESSION?.access_token){
+        await rest('/auth/v1/logout',{method:'POST'});
+      }
+      SESSION=null;
+      localStorage.removeItem('ca_session');
+      if(window.__caAuth)window.__caAuth('SIGNED_OUT',null);
+      return {error:null};
+    },
+    onAuthStateChange(fn){
+      window.__caAuth=fn;
+      return {data:{subscription:{unsubscribe(){if(window.__caAuth===fn)window.__caAuth=null}}}};
+    },
+    async getSession(){return {data:{session:SESSION},error:null}}
+  }
+};
+</script>
 <style>
 body{margin:0;background:#f4f6fa;color:#1f2937;font-family:system-ui,-apple-system,Segoe UI,sans-serif}.hidden{display:none!important}header{background:#111827;color:white;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}.wrap{max-width:1180px;margin:auto;padding:18px}nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}button{border:0;border-radius:9px;padding:9px 13px;font-weight:700;cursor:pointer}nav button{background:#e5e7eb}nav button.active,.primary{background:#2563eb;color:white}.card{background:white;border:1px solid #e5e7eb;border-radius:15px;padding:16px;margin-bottom:14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}input,select{width:100%;padding:9px 10px;border:1px solid #d1d5db;border-radius:8px;font:inherit;box-sizing:border-box}label{font-weight:700;font-size:13px;display:block;margin-bottom:5px}table{width:100%;border-collapse:collapse}th,td{padding:9px 7px;border-bottom:1px solid #eee;text-align:left}th{font-size:12px;color:#6b7280}.muted{color:#6b7280}.stat{font-size:28px;font-weight:800}.ok{color:#15803d}.bad{color:#b91c1c}.warn{color:#a16207}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.right{text-align:right}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:15px;z-index:10}.modal.show{display:flex}.modalbox{max-width:650px;width:100%;max-height:90vh;overflow:auto;background:white;border-radius:15px;padding:18px}.monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.dow{font-size:12px;font-weight:800;color:#6b7280;padding:5px}.day{min-height:76px;background:white;border:1px solid #e5e7eb;border-radius:8px;padding:5px}.event{font-size:11px;margin-top:4px;padding:3px 5px;border-radius:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pill{font-size:11px;background:#eef2ff;padding:3px 6px;border-radius:999px}
 </style></head><body>
@@ -15,7 +84,8 @@ body{margin:0;background:#f4f6fa;color:#1f2937;font-family:system-ui,-apple-syst
 <section id="backup" class="tab hidden"><div class="card"><h2>Copias</h2><p class="muted">Descarga una copia de los datos para guardarla.</p><button class="primary" id="ex">Descargar copia</button><p id="bm" class="muted"></p></div></section>
 </div></div><div id="mo" class="modal"><div id="mb" class="modalbox"></div></div>
 <script>
-const URL='https://oncrgfvygxufzpxlooul.supabase.co',KEY='sb_publishable_v-kJsoyf-CYvKGXEMGK6uA_Pa7XBmsc';const db=window.supabase.createClient(URL,KEY);let D={u:[],a:[],e:[],t:[],c:[]},cal=new Date();
+// Cliente REST de Supabase creado arriba; no depende de librerías externas.
+const db=db;let D={u:[],a:[],e:[],t:[],c:[]},cal=new Date();
 const $=x=>document.getElementById(x), money=x=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(x||0)), esc=x=>String(x||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])), fd=x=>x?new Date(x+'T12:00:00').toLocaleDateString('es-ES'):'';
 async function get(t){const r=await db.from(t).select('*');if(r.error)throw r.error;return r.data||[]}async function load(){D.u=await get('app_users');D.a=await get('activities');D.e=await get('enrollments');D.t=await get('attendance');D.c=await get('charges');D.u.sort((x,y)=>x.nombre.localeCompare(y.nombre,'es'));D.a.sort((x,y)=>x.nombre.localeCompare(y.nombre,'es'));render()}
 function modal(h){$('mb').innerHTML=h;$('mo').classList.add('show')}function close(){ $('mo').classList.remove('show') }$('mo').onclick=e=>{if(e.target.id==='mo')close()};
@@ -70,5 +140,5 @@ function renderCal(){const y=cal.getFullYear(),m=cal.getMonth(),f=new Date(y,m,1
 function renderHome(){const ym=new Date().toISOString().slice(0,7),x=monthInfo(ym),r=D.t.filter(t=>t.fecha.startsWith(ym)&&t.estado!=='excluido');$('su').textContent=D.u.filter(x=>x.activo).length;$('sa').textContent=D.a.filter(x=>x.activa).length;$('sp').textContent=r.length?Math.round(r.filter(x=>x.estado==='acudio').length/r.length*100)+'%':'—';$('sr').textContent=money(x.total)}function render(){const opts='<option value="">Selecciona actividad...</option>'+D.a.filter(x=>x.activa).map(a=>'<option value="'+a.id+'">'+esc(a.nombre)+'</option>').join('');$('aa').innerHTML=opts;renderUsers();renderActs();renderUnits();renderAtt();renderCal();renderEco();renderHome()}
 $('newU').onclick=()=>userForm();$('newA').onclick=()=>actForm();$('us').oninput=renderUsers;$('ad').value=new Date().toISOString().slice(0,10);$('ad').onchange=renderAtt;$('aa').onchange=renderAtt;$('pm').onclick=()=>{cal.setMonth(cal.getMonth()-1);renderCal()};$('nm').onclick=()=>{cal.setMonth(cal.getMonth()+1);renderCal()};$('em').value=new Date().toISOString().slice(0,7);$('em').onchange=renderEco;
 $('ex').onclick=()=>{const b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='control-asistencia-copia.json';a.click();$('bm').textContent='Copia descargada.'};
-$('loginBtn').onclick=async()=>{const r=await db.auth.signInWithPassword({email:$('le').value.trim(),password:$('lp').value});$('lm').textContent=r.error?r.error.message:'Entrando...'};$('signupBtn').onclick=async()=>{const r=await db.auth.signUp({email:$('le').value.trim(),password:$('lp').value});$('lm').textContent=r.error?r.error.message:'Cuenta creada. Revisa el correo si te pide confirmación.'};$('out').onclick=()=>db.auth.signOut();function show(s){$('login').classList.toggle('hidden',!!s);$('app').classList.toggle('hidden',!s);if(s){$('who').textContent=s.user.email||'';load().catch(e=>alert(e.message))}}db.auth.onAuthStateChange((_e,s)=>show(s));db.auth.getSession().then(x=>show(x.data.session));
+$('loginBtn').onclick=async()=>{ $('lm').textContent='Comprobando acceso...'; try{const r=await db.auth.signInWithPassword({email:$('le').value.trim(),password:$('lp').value}); $('lm').textContent=r.error?r.error.message:'Entrando...';}catch(e){$('lm').textContent='Error de conexión: '+(e?.message||String(e));} };$('signupBtn').onclick=async()=>{const r=await db.auth.signUp({email:$('le').value.trim(),password:$('lp').value});$('lm').textContent=r.error?r.error.message:'Cuenta creada. Revisa el correo si te pide confirmación.'};$('out').onclick=()=>db.auth.signOut();function show(s){$('login').classList.toggle('hidden',!!s);$('app').classList.toggle('hidden',!s);if(s){$('who').textContent=s.user.email||'';load().catch(e=>alert(e.message))}}db.auth.onAuthStateChange((_e,s)=>show(s));db.auth.getSession().then(x=>show(x.data.session));
 </script></body></html>
