@@ -25,9 +25,10 @@ try{
   if(!window.supabase||!window.supabase.createClient)throw new Error('No se ha podido cargar Supabase. Recarga la página e inténtalo de nuevo.');
   db=window.supabase.createClient(URL,KEY);
 }catch(e){
-  $('lm').textContent=e.message||'Error al iniciar la aplicación.';
-  $('loginBtn').disabled=true;
-  $('signupBtn').disabled=true;
+  document.getElementById('lm').textContent='ERROR AL CARGAR EL ACCESO: '+(e&&e.message?e.message:String(e));
+  document.getElementById('loginBtn').disabled=true;
+  document.getElementById('signupBtn').disabled=true;
+  throw e;
 }
 let D={u:[],a:[],e:[],t:[],c:[]},cal=new Date();
 const $=x=>document.getElementById(x), money=x=>new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number(x||0)), esc=x=>String(x||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])), fd=x=>x?new Date(x+'T12:00:00').toLocaleDateString('es-ES'):'';
