@@ -18,12 +18,12 @@ document.getElementById('loginBtn').onclick=function(){document.getElementById('
 document.getElementById('signupBtn').onclick=function(){document.getElementById('lm').textContent='El botón sí funciona. Estoy comprobando la creación de cuenta…';};
 </script>
 <script>
-const URL='https://oncrgfvygxufzpxlooul.supabase.co',KEY='sb_publishable_v-kJsoyf-CYvKGXEMGK6uA_Pa7XBmsc';
+const SUPABASE_URL='https://oncrgfvygxufzpxlooul.supabase.co',SUPABASE_KEY='sb_publishable_v-kJsoyf-CYvKGXEMGK6uA_Pa7XBmsc';
 const AUTH_TIMEOUT_MS=10000;
 let db;
 try{
   if(!window.supabase||!window.supabase.createClient)throw new Error('No se ha podido cargar Supabase. Recarga la página e inténtalo de nuevo.');
-  db=window.supabase.createClient(URL,KEY);
+  db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 }catch(e){
   document.getElementById('lm').textContent='ERROR AL CARGAR EL ACCESO: '+(e&&e.message?e.message:String(e));
   document.getElementById('loginBtn').disabled=true;
