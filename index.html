@@ -14,6 +14,10 @@ body{margin:0;background:#f4f6fa;color:#1f2937;font-family:system-ui,-apple-syst
 <section id="backup" class="tab hidden"><div class="card"><h2>Copias</h2><p class="muted">Descarga una copia de los datos para guardarla.</p><button class="primary" id="ex">Descargar copia</button><p id="bm" class="muted"></p></div></section>
 </div></div><div id="mo" class="modal"><div id="mb" class="modalbox"></div></div>
 <script>
+document.getElementById('loginBtn').onclick=function(){document.getElementById('lm').textContent='El botón sí funciona. Estoy comprobando el acceso…';};
+document.getElementById('signupBtn').onclick=function(){document.getElementById('lm').textContent='El botón sí funciona. Estoy comprobando la creación de cuenta…';};
+</script>
+<script>
 const URL='https://oncrgfvygxufzpxlooul.supabase.co',KEY='sb_publishable_v-kJsoyf-CYvKGXEMGK6uA_Pa7XBmsc';
 let db;
 try{
