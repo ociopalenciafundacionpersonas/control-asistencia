@@ -19,6 +19,7 @@ document.getElementById('loginBtn').onclick=function(){document.getElementById('
 document.getElementById('signupBtn').onclick=function(){document.getElementById('lm').textContent='El botón sí funciona. Estoy comprobando la creación de cuenta…';};
 </script>
 <script>
+window.addEventListener('error',e=>{if(String(e.message||'').toLowerCase().includes('pdf')||String(e.filename||'').includes('jspdf'))pdfStatus('Error PDF: '+(e.message||'Error de JavaScript'),true)});window.addEventListener('unhandledrejection',e=>{const m=e.reason?.message||String(e.reason||'Error');if(/pdf|jspdf/i.test(m))pdfStatus('Error PDF: '+m,true)});
 const SUPABASE_URL='https://oncrgfvygxufzpxlooul.supabase.co',SUPABASE_KEY='sb_publishable_v-kJsoyf-CYvKGXEMGK6uA_Pa7XBmsc';
 const AUTH_TIMEOUT_MS=10000;
 let db;
