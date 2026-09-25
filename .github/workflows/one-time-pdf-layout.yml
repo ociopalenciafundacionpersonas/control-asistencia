@@ -6,7 +6,6 @@ permissions:
   contents: write
 jobs:
   fix:
-    if: "contains(github.event.head_commit.message, 'PDF layout applied') == false"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,9 +33,4 @@ function pdfFooter"""
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
           git commit -m 'PDF layout applied [skip ci]'
-          git push
-      - name: Remove one-time workflow
-        run: |
-          git rm .github/workflows/one-time-pdf-layout.yml
-          git commit -m 'Remove PDF layout workflow [skip ci]'
           git push
