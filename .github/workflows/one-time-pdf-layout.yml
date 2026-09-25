@@ -1,4 +1,4 @@
-name: One-time PDF layout fix
+name: Apply PDF layout fix
 on:
   push:
     branches: [main]
@@ -6,36 +6,37 @@ permissions:
   contents: write
 jobs:
   fix:
-    if: "contains(github.event.head_commit.message, 'PDF layout fix') == false"
+    if: "contains(github.event.head_commit.message, 'PDF layout applied') == false"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fix PDF header and table spacing
+      - name: Fix fixed PDF header and table start
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
           p=Path('index.html')
           s=p.read_text()
-          old=re.search(r"function pdfHeader\(d,title,subtitle\).*?\nfunction pdfFooter",s,re.S)
-          if not old:
+          pattern=r"function pdfHeader\(d,title,subtitle\)\{.*?\}\nfunction pdfFooter"
+          m=re.search(pattern,s,re.S)
+          if not m:
               raise SystemExit('pdfHeader not found')
-          new="""function pdfHeader(d,title,subtitle){d.setFillColor(...PDF_BLUE);d.rect(0,0,210,6,'F');d.setFillColor(255,255,255);d.roundedRect(12,9,28,20,3,3,'F');try{d.addImage(PDF_LOGO,'PNG',14,10,24,17)}catch(e){console.warn('Logo PDF:',e);d.setFillColor(...PDF_BLUE);d.rect(14,10,24,17,'F');d.setFillColor(...PDF_TURQ);d.rect(14,22,24,5,'F')}d.setTextColor(...PDF_MUTED);d.setFont('helvetica','bold');d.setFontSize(7);d.text('CONTROL DE ASISTENCIA',48,14);d.setTextColor(...PDF_TURQ);d.setFontSize(7.5);d.text('Servicio de ocio y tiempo libre',48,19);d.setTextColor(...PDF_BLUE);d.setFontSize(15);d.setFont('helvetica','bold');d.text(title,48,27);d.setTextColor(...PDF_INK);d.setFontSize(9);d.setFont('helvetica','normal');d.text(subtitle,48,34);d.setTextColor(...PDF_MUTED);d.setFontSize(8);d.text('Emisión · '+pdfDate(),196,34,{align:'right'});d.setDrawColor(...PDF_TURQ);d.setLineWidth(1.2);d.line(12,39,198,39);d.setDrawColor(...PDF_LINE);d.setLineWidth(.35);d.line(12,41,198,41)}
+          new="""function pdfHeader(d,title,subtitle){d.setFillColor(...PDF_BLUE);d.rect(0,0,210,6,'F');d.setFillColor(255,255,255);d.roundedRect(12,9,28,20,3,3,'F');try{d.addImage(PDF_LOGO,'PNG',14,10,24,17)}catch(e){console.warn('Logo PDF:',e);d.setFillColor(...PDF_BLUE);d.rect(14,10,24,17,'F');d.setFillColor(...PDF_TURQ);d.rect(14,22,24,5,'F')}d.setTextColor(...PDF_MUTED);d.setFont('helvetica','bold');d.setFontSize(7);d.text('CONTROL DE ASISTENCIA',48,14);d.setTextColor(...PDF_TURQ);d.setFontSize(7.5);d.text('Servicio de ocio y tiempo libre',48,19);d.setTextColor(...PDF_BLUE);d.setFontSize(14);d.setFont('helvetica','bold');d.text(title,48,28,{maxWidth:145});d.setTextColor(...PDF_INK);d.setFontSize(8.5);d.setFont('helvetica','normal');d.text(subtitle,48,36,{maxWidth:120});d.setTextColor(...PDF_MUTED);d.setFontSize(8);d.text('Emisión · '+pdfDate(),198,36,{align:'right'});d.setDrawColor(...PDF_TURQ);d.setLineWidth(1.1);d.line(12,44,198,44);d.setDrawColor(...PDF_LINE);d.setLineWidth(.35);d.line(12,46,198,46)}
 function pdfFooter"""
-          s=s[:old.start()]+new+s[old.end():]
-          s=s.replace('startY:50,head:', 'startY:47,head:')
-          s=s.replace('startY:42,head:', 'startY:47,head:')
+          s=s[:m.start()]+new+s[m.end():]
+          s=s.replace('startY:50,head:', 'startY:52,head:')
+          s=s.replace('startY:42,head:', 'startY:52,head:')
           p.write_text(s)
           PY
-      - name: Commit fix
+      - name: Commit applied fix
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add index.html
-          git commit -m 'PDF layout fix [skip ci]'
+          git commit -m 'PDF layout applied [skip ci]'
           git push
       - name: Remove one-time workflow
         run: |
           git rm .github/workflows/one-time-pdf-layout.yml
-          git commit -m 'Remove one-time PDF layout workflow [skip ci]'
+          git commit -m 'Remove PDF layout workflow [skip ci]'
           git push
