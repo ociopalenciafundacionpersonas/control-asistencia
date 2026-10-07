@@ -32,7 +32,7 @@
     const box=document.getElementById('attendanceStats'); if(!box || typeof D==='undefined') return;
     const ym=box.querySelector('#asMonth')?.value || new Date().toISOString().slice(0,7);
     const start=ym+'-01', [y,m]=ym.split('-').map(Number), end=new Date(y,m,0).toISOString().slice(0,10);
-    const rows=(D.u||[]).map(u=>{
+    const query=box.querySelector('#asSearch')?.value||'';const norm=s=>String(s||'').toLocaleLowerCase('es-ES').normalize('NFD').replace(/[\u0300-\u036f]/g,'');const q=norm(query);const rows=(D.u||[]).filter(u=>norm(u.nombre).includes(q)).map(u=>{
       let expected=0, attended=0, activities=new Set();
       (D.t||[]).filter(t=>t.fecha>=start&&t.fecha<=end&&t.estado!=='excluido'&&t.user_id===u.id).forEach(t=>{
         const enrolled=(D.e||[]).find(e=>e.user_id===u.id&&e.activity_id===t.activity_id&&e.fecha_inicio<=t.fecha&&(!e.fecha_fin||e.fecha_fin>=t.fecha));
@@ -53,9 +53,9 @@
     if(document.getElementById('attendanceStats')){renderStats();return;}
     const home=document.getElementById('home'); if(!home){setTimeout(install,300);return;}
     const card=document.createElement('div'); card.className='card'; card.id='attendanceStats';
-    card.innerHTML='<div class="row" style="justify-content:space-between"><div><h2 id="asTitle" style="margin:0 0 4px">Asistencia por usuario</h2><div class="muted">Porcentaje mensual según las sesiones de las actividades a las que está apuntado/a.</div></div><div><label>Mes</label><input id="asMonth" type="month" value="'+new Date().toISOString().slice(0,7)+'"></div></div><div id="asBody" style="margin-top:12px"></div>';
+    card.innerHTML='<div class="row" style="justify-content:space-between"><div><h2 id="asTitle" style="margin:0 0 4px">Asistencia por usuario</h2><div class="muted">Porcentaje mensual según las sesiones de las actividades a las que está apuntado/a.</div></div><div><label>Mes</label><input id="asMonth" type="month" value="'+new Date().toISOString().slice(0,7)+'"></div></div><div style="margin-top:10px"><input id="asSearch" placeholder="Buscar usuario..." style="width:100%"></div><div id="asBody" style="margin-top:12px"></div>';
     home.appendChild(card);
-    card.querySelector('#asMonth').addEventListener('change',renderStats);
+    card.querySelector('#asMonth').addEventListener('change',renderStats);card.querySelector('#asSearch').addEventListener('input',renderStats);
     const oldLoad=window.load;
     if(typeof oldLoad==='function' && !oldLoad.__attendanceStatsWrapped){
       const wrapped=async function(){const r=await oldLoad.apply(this,arguments);setTimeout(renderStats,0);return r};
