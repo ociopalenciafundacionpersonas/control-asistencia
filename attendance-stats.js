@@ -8,7 +8,7 @@
     const u=(D.u||[]).find(x=>x.id===uid); if(!u)return;
     const [y,m]=ym.split('-').map(Number), start=ym+'-01', end=new Date(y,m,0).toISOString().slice(0,10);
     const groups={};
-    (D.t||[]).filter(t=>t.fecha>=start&&t.fecha<=end&&t.estado!=='excluido'&&t.user_id===uid).forEach(t=>{
+    (D.t||[]).filter(t=>t.fecha>=start&&t.fecha<=end&&t.estado!=='excluido'&&t.user_id===uid&&!(typeof isAttendanceExcused==='function'&&isAttendanceExcused(uid,t.fecha))).forEach(t=>{
       const enrolled=(D.e||[]).find(e=>e.user_id===uid&&e.activity_id===t.activity_id&&e.fecha_inicio<=t.fecha&&(!e.fecha_fin||e.fecha_fin>=t.fecha));
       if(!enrolled)return;
       const k=t.activity_id;
@@ -34,7 +34,7 @@
     const start=ym+'-01', [y,m]=ym.split('-').map(Number), end=new Date(y,m,0).toISOString().slice(0,10);
     const query=box.querySelector('#asSearch')?.value||'';const norm=s=>String(s||'').toLocaleLowerCase('es-ES').normalize('NFD').replace(/[\u0300-\u036f]/g,'');const q=norm(query);const rows=(D.u||[]).filter(u=>norm(u.nombre).includes(q)).map(u=>{
       let expected=0, attended=0, activities=new Set();
-      (D.t||[]).filter(t=>t.fecha>=start&&t.fecha<=end&&t.estado!=='excluido'&&t.user_id===u.id).forEach(t=>{
+      (D.t||[]).filter(t=>t.fecha>=start&&t.fecha<=end&&t.estado!=='excluido'&&t.user_id===u.id&&!(typeof isAttendanceExcused==='function'&&isAttendanceExcused(u.id,t.fecha))).forEach(t=>{
         const enrolled=(D.e||[]).find(e=>e.user_id===u.id&&e.activity_id===t.activity_id&&e.fecha_inicio<=t.fecha&&(!e.fecha_fin||e.fecha_fin>=t.fecha));
         if(!enrolled)return;
         expected++; activities.add(t.activity_id); if(t.estado==='acudio') attended++;
